@@ -1,39 +1,41 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js"
+// Demo mode - disable Supabase for static export
+const process = {
+  env: {
+    NEXT_PUBLIC_SUPABASE_URL: "https://placeholder.supabase.co",
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.demo",
+    GOOGLE_MAPS_API_KEY: "demo",
+  }
+}
 
+import { createClient } from "@supabase/supabase-js"
+
+// Force demo mode to avoid build errors
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-// Create mock supabase for demo mode (when env vars are not set)
-function createDemoSupabase(): SupabaseClient {
-  return {
-    auth: {
-      getSession: () => Promise.resolve({ data: { session: null }, error: null }),
-      onAuthStateChange: (_callback: any, handler: any) => ({
-        data: { subscription: { unsubscribe: () => {} } },
-      }),
-      signInWithPassword: (_creds: any) => Promise.resolve({ data: null, error: null }),
-      signUp: (_creds: any) => Promise.resolve({ data: null, error: null }),
-      signOut: () => Promise.resolve({ error: null }),
-    },
-    // Add other methods as needed for build compatibility
-    from: (_table: string) => ({
-      select: () => ({ data: [], error: null }),
-      insert: () => ({ error: null }),
-      update: () => ({ error: null }),
-      delete: () => ({ error: null }),
-      eq: () => ({ data: [], error: null }),
-      single: () => ({ data: null, error: null }),
-      maybeSingle: () => ({ data: null, error: null }),
-      order: () => ({ data: [], error: null }),
-      limit: () => ({ data: [], error: null }),
+// Always use demo client
+export const supabase = {
+  auth: {
+    getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+    onAuthStateChange: (_cb: any, _handler: any) => ({
+      data: { subscription: { unsubscribe: () => {} } },
     }),
-  } as unknown as SupabaseClient
-}
-
-export const supabase: SupabaseClient =
-  supabaseUrl && supabaseAnonKey
-    ? createClient(supabaseUrl, supabaseAnonKey)
-    : createDemoSupabase()
+    signInWithPassword: () => Promise.resolve({ data: null, error: null }),
+    signUp: () => Promise.resolve({ data: null, error: null }),
+    signOut: () => Promise.resolve({ error: null }),
+  },
+  from: (_table: string) => ({
+    select: () => Promise.resolve({ data: [], error: null }),
+    insert: () => Promise.resolve({ error: null }),
+    update: () => Promise.resolve({ error: null }),
+    delete: () => Promise.resolve({ error: null }),
+    eq: () => Promise.resolve({ data: [], error: null }),
+    single: () => Promise.resolve({ data: null, error: null }),
+    maybeSingle: () => Promise.resolve({ data: null, error: null }),
+    order: () => Promise.resolve({ data: [], error: null }),
+    limit: () => Promise.resolve({ data: [], error: null }),
+  }),
+} as any
 
 export type Generation = {
   id: string
